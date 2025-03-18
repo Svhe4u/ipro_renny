@@ -279,6 +279,10 @@ function ProductList() {
                 <th>Ангилал</th>
                 <th>Тоо хэмжээ</th>
                 <th>Үнэ</th>
+                <th>Үнэ</th>
+                <th>Үнэ</th>
+                <th>Үнэ</th>
+                <th>Үнэ</th>
                 <th>Үйлдэл</th>
               </tr>
             </thead>
