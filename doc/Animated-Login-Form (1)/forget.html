@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Forget Password</title>
+</head>
+<body>
+    <section>
+        <form id="forgetForm">
+            <h1>Forget Password</h1>
+            <div class="inputbox">
+                <ion-icon name="mail-outline"></ion-icon>
+                <input type="email" id="email" required>
+                <label>Email</label>
+            </div>
+            <button type="button" id="sendCode">Send Code</button>
+            
+            <div id="codeSection" style="display: none;">
+                <div class="inputbox">
+                    <input type="text" id="otpCode" required>
+                    <label>Enter Code</label>
+                </div>
+                <button type="button" id="verifyCode">Verify Code</button>
+            </div>
+
+            <div id="resetSection" style="display: none;">
+                <div class="inputbox">
+                    <input type="password" id="newPassword" required>
+                    <label>New Password</label>
+                </div>
+                <button type="button" id="resetPassword">Reset Password</button>
+            </div>
+
+            <p><a href="login.html">Back to Login</a></p>
+        </form>
+    </section>
+
+    <script src="script.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+</html>
