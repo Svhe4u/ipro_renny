@@ -1,197 +1,62 @@
-/* Global styles */
+/* Reset default margin & padding */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* Apply a background color */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f7fc;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  /* Container style */
-  .container {
-    max-width: 1200px;  /* Тохиромжтой өргөн */
-    margin: 0 auto;     /* Газардуулах (center align) */
-    padding: 20px;      /* Дотоод зай */
-  }
-  
-  /* Heading styles */
-  h1 {
-    color: #333;
-    text-align: center;
-    margin-bottom: 30px;
-  }
-  
-  h2 {
-    color: #555;
-    margin-bottom: 20px;
-  }
-  
-  /* Table Styles */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 30px;
-  }
-  
-  th,
-  td {
-    padding: 12px 15px;
-    text-align: left;
-  }
-  
-  th {
-    background-color: #4CAF50;
-    color: white;
-  }
-  
-  tr:nth-child(even) {
-    background-color: #f2f2f2;
-  }
-  
-  tr:hover {
-    background-color: #ddd;
-  }
-  
-  /* Search Input */
-  input[type="text"] {
-    padding: 8px 12px;
-    margin-bottom: 20px;
-    width: 100%;
-    max-width: 300px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-  }
-  
-  /* Form styles */
-  form {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
-  }
-  
-  label {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: bold;
-  }
-  
-  input[type="text"],
-  input[type="number"] {
-    width: 100%;
-    padding: 8px;
-    margin: 5px 0 20px 0;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-  }
-  
-  button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  button:hover {
-    background-color: #45a049;
-  }
-  
-  /* Low stock alert */
-  .low-stock-alert {
-    background-color: #ffcccc;
-    padding: 15px;
-    border: 1px solid #ff0000;
-    border-radius: 5px;
-    margin-bottom: 20px;
-  }
-  
-.loginButton {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 10px;
-  }
-  
-  .loginButton:hover {
-    background-color: #45a049;
-  }
-  
-  .loginButton:active {
-    background-color: #3e8e41;
-  }
-  
-  .loginButton:nth-child(2) {
-    background-color: #d9534f;
-  }
-  
-  .loginButton:nth-child(2):hover {
-    background-color: #c9302c;
-  }
-  
-.login-register {
-    display: flex;
-    flex-direction: column;
-    max-width: 300px;
-    margin: 0 auto;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-  }
-  .low-stock-alert ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .low-stock-alert li {
-    font-size: 16px;
-    color: #d9534f;
-  }
-  
-  /* Sales report */
-  .sales-report {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-top: 30px;
-    color: #333;
-  }
-  
-  button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-right: 10px;
-  }
-  
-  button:hover {
-    background-color: #45a049;
-  }
-  
-  button:active {
-    background-color: #3e8e41;
-  }
-  
-  /* Устгах товчийн өнгө */
-  button:nth-child(2) {
-    background-color: #d9534f;
-  }
-  
-  button:nth-child(2):hover {
-    background-color: #c9302c;
-  }
-  
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+/* Header Styles */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #1a202c;
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo */
+header div {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Navigation Buttons */
+header a {
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  transition: background 0.3s;
+  color: white;
+}
+
+header a:hover {
+  opacity: 0.8;
+}
+
+header a:first-child {
+  background: #3182ce;
+}
+
+header a:last-child {
+  background: #38a169;
+}
+
+/* Main Content */
+main {
+  padding: 20px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-top: 20px;
+}
