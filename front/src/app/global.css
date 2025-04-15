@@ -1,0 +1,4 @@
+/* Tailwind CSS эсвэл өөрийн стилийн багц ашиглах */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

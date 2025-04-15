@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Header from "./components/Header";
 import "./styles.css"; // Ensure global styles are applied
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
