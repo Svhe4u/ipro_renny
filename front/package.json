@@ -44,7 +44,7 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4.1.4",
     "@types/node": "^20.17.30",
-    "@types/react": "^18.3.20",
+    "@types/react": "^19.1.2",
     "@types/react-dom": "^18.3.6",
     "@types/react-native": "^0.72.8",
     "autoprefixer": "^10.4.21",

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { Toaster } from '@/components/ui/sonner'; // Import both Toaster and toast
 import { Loader2 } from 'lucide-react';
 import { removeUser } from '@/lib/auth';
 
@@ -22,14 +22,19 @@ export default function ProfilePage() {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { toast } = useToast();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setName(JSON.parse(storedUser).name || '');
-      setEmail(JSON.parse(storedUser).email || '');
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setName(parsedUser?.name || '');
+        setEmail(parsedUser?.email || '');
+      } catch (error) {
+        console.error('Error parsing user from localStorage:', error);
+        router.push('/login');
+      }
     } else {
       router.push('/login');
     }
@@ -50,23 +55,19 @@ export default function ProfilePage() {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('user', JSON.stringify({ ...user, name, email }));
-        setUser({ ...user, name, email });
-        toast({
-          title: 'Profile updated!',
+        const updatedUser = { ...user, name, email };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        toast.success('Profile updated!', {
           description: 'Your profile information has been updated.',
         });
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Update failed.',
+        toast.error('Update failed.', {
           description: data.message || 'Something went wrong updating your profile.',
         });
       }
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Update error.',
+      toast.error('Update error.', {
         description: error.message || 'There was an error updating your profile.',
       });
     } finally {

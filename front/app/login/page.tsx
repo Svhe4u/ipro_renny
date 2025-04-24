@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Toast } from '@/components/ui/sonner';
+import { toaster } from '@/components/ui/sonner'; // Import the toast function
 import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -13,7 +13,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { toast } = Toast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,22 +32,17 @@ export default function LoginPage() {
       if (response.ok) {
         localStorage.setItem('user', JSON.stringify(data.user)); // Store user data
         router.push('/dashboard');
-        toast({
-          title: 'Login successful!',
-          description: `Welcome, ${data.user.name}!`,
+        toast.success(`Welcome, ${data.user.name}!`, {
+          duration: 2000,
         });
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Login failed.',
-          description: data.message || 'Invalid credentials.',
+        toast.error(data.message || 'Invalid credentials.', {
+          duration: 3000,
         });
       }
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Login error.',
-        description: error.message || 'Something went wrong.',
+      toast.error(error.message || 'Something went wrong.', {
+        duration: 3000,
       });
     } finally {
       setIsLoading(false);
