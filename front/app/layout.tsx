@@ -1,12 +1,20 @@
-// app/layout.tsx
-import './globals.css'; // <== must be present at the top
+import { cn } from '@/lib/utils';
+import { Inter } from 'next/font/google';
+import './globals.css';
 
-import { ReactNode } from 'react';
+const inter = Inter({ subsets: ['latin'] });
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export const metadata = {
+  title: 'CV Maker',
+  description: 'Create professional CVs easily.',
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={cn(inter.className, 'bg-background')}>
+        {children}
+      </body>
     </html>
   );
 }
