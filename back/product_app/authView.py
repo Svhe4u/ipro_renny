@@ -10,8 +10,6 @@ from django.contrib.auth.hashers import make_password, check_password
 def register(request):
     data = json.loads(request.body)
     try:
-        firstname = data['firstname']
-        lastname = data['lastname']
         email = data['email']
         password = data['password']
     except:
@@ -27,8 +25,8 @@ def register(request):
                 return sendResponse(1000)
 
             query = f'''INSERT INTO public.t_user(
-                            firstname, lastname, email, password, is_verified, created_date)
-                            VALUES ('{firstname}', '{lastname}', '{email}', '{make_password(password)}', false, NOW() )
+                            email, password, is_verified, created_date)
+                            VALUES ( '{email}', '{make_password(password)}', false, NOW() )
                             RETURNING pid;'''
             cur.execute(query)
             pid = cur.fetchone()[0]

@@ -172,7 +172,7 @@ statusMessage = {
 
 
 def sendMail(recipient, subj, bodyHtml):
-    sender_email = "whois@mandakh.edu.mn"
+    sender_email = "testmail@mandakh.edu.mn"
     sender_password = "Mandakh2"
     recipient_email = recipient
     subject = subj
