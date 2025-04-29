@@ -1,0 +1,58 @@
+// pages/register.tsx
+"use client";
+import { useState } from "react";
+
+export default function RegisterPage() {
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (key: keyof typeof form, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Registering:", form);
+  };
+
+  return (
+    <div className="flex justify-center items-center min-h-screen bg-black text-white px-6 py-12">
+      <div className="max-w-md w-full">
+        <h1 className="text-3xl font-bold mb-8 text-center">Create Account</h1>
+
+        <form onSubmit={handleSubmit}>
+       
+
+          <div className="mb-4">
+            <input
+              type="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+              className="bg-white/10 text-white px-4 py-3 w-full rounded-xl"
+            />
+          </div>
+
+          <div className="mb-6">
+            <input
+              type="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={(e) => handleChange("password", e.target.value)}
+              className="bg-white/10 text-white px-4 py-3 w-full rounded-xl"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="bg-blue-600 py-4 w-full rounded-xl text-white font-semibold"
+          >
+            Register
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
