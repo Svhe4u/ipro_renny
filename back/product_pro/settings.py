@@ -153,6 +153,7 @@ statusMessage = {
     1000: 'Бүртгэлтэй хэрэглэгч байна',
     1001: 'Token-ний хугацаа дууссан эсвэл хүчингүй token байна',
     1002: 'Баталгаажсан хэрэглэгч байна',
+    1004: 'Бүртгэлгүй хэрэглэгч байна',
 
     200: 'Success',
     204: 'No Content',
@@ -165,6 +166,8 @@ statusMessage = {
     4003: 'Invalid Action',
     4004: 'Key дутуу',
     4005: 'Database Error',
+    4007: 'Password буруу байна',
+    4008: 'Бүртгэлээ баталгаажуулна уу',
 
     5000: 'Server Error',
     5004: 'Register Service дотоод алдаа',
@@ -172,7 +175,7 @@ statusMessage = {
 
 
 def sendMail(recipient, subj, bodyHtml):
-    sender_email = "whois@mandakh.edu.mn"
+    sender_email = "testmail@mandakh.edu.mn"
     sender_password = "Mandakh2"
     recipient_email = recipient
     subject = subj

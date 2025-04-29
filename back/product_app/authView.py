@@ -7,11 +7,57 @@ from product_pro.settings import sendResponse, connectDB, sendMail
 from django.contrib.auth.hashers import make_password, check_password
 
 
+
+
+def login(request):
+    try:
+        jsons = json.loads(request.body)
+        email = jsons['email']
+        password = jsons['password']
+    except Exception as e:
+        res = sendResponse(4006)
+        return res
+
+    try:
+        with connectDB() as con:
+            cur = con.cursor()
+
+            query = f'''SELECT email FROM public.t_user
+                        WHERE email='{email}' '''
+            cur.execute(query)
+            data = cur.fetchone()
+
+            if not data:
+                res = sendResponse(1004)
+                return res
+
+            query = f'''SELECT password, firstname, pid  FROM public.t_user
+                        WHERE email='{email}' and is_verified=true '''
+            cur.execute(query)
+            data = cur.fetchone()
+
+            if not data:
+                res = sendResponse(4008)
+                return res
+
+            if not check_password(password, data[0]):
+                res = sendResponse(4007)
+                return res
+
+            resJson = {
+                'pid': data[2],
+                'firstname': data[1]
+            }
+            res = sendResponse(200, [resJson])
+            return res
+    except Exception as e:
+        print(f'###################{e}')
+        res = sendResponse(5001)
+        return res
+# login
 def register(request):
     data = json.loads(request.body)
     try:
-        firstname = data['firstname']
-        lastname = data['lastname']
         email = data['email']
         password = data['password']
     except:
@@ -27,8 +73,8 @@ def register(request):
                 return sendResponse(1000)
 
             query = f'''INSERT INTO public.t_user(
-                            firstname, lastname, email, password, is_verified, created_date)
-                            VALUES ('{firstname}', '{lastname}', '{email}', '{make_password(password)}', false, NOW() )
+                            email, password, is_verified, created_date)
+                            VALUES ( '{email}', '{make_password(password)}', false, NOW() )
                             RETURNING pid;'''
             cur.execute(query)
             pid = cur.fetchone()[0]
@@ -64,6 +110,9 @@ def authCheckService(request):
 
         if data['action'] == 'register':
             res = register(request)
+            return JsonResponse(res)
+        elif data['action'] == 'login':
+            res = login(request)
             return JsonResponse(res)
         else:
             res = sendResponse(4003)
