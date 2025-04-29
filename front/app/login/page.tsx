@@ -1,50 +1,49 @@
 "use client";
+
 import { useState } from "react";
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const [form, setForm] = useState({
-    action: "register",
+    action: "login",
     email: "",
     password: "",
   });
-  const [rePassword, setRePassword] = useState("");
 
   const handleChange = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Check if passwords match
-    if (rePassword !== form.password) {
-      alert("Passwords do not match");
-      return; // Stop the form submission
-    }
-
-    // Proceed with the API call if passwords match
-    fetch("http://127.0.0.1:8000/api/auth/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(form),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Success:", data);
-        // You can add additional logic here, like redirecting after success
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        // Optionally handle the error UI here
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/auth/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
       });
+
+      const data = await response.json();
+      console.log("Response:", data);
+
+      if (response.ok) {
+        alert("Login successful!");
+        // You can redirect here or store user data
+      } else {
+        alert(data.message || "Login failed.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Server error");
+    }
   };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-black text-white px-6 py-12">
       <div className="max-w-md w-full">
-        <h1 className="text-3xl font-bold mb-8 text-center">Create Account</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center">Login</h1>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -54,6 +53,7 @@ export default function RegisterPage() {
               value={form.email}
               onChange={(e) => handleChange("email", e.target.value)}
               className="bg-white/10 text-white px-4 py-3 w-full rounded-xl"
+              required
             />
           </div>
 
@@ -64,15 +64,7 @@ export default function RegisterPage() {
               value={form.password}
               onChange={(e) => handleChange("password", e.target.value)}
               className="bg-white/10 text-white px-4 py-3 w-full rounded-xl"
-            />
-          </div>
-          <div className="mb-6">
-            <input
-              type="password"
-              placeholder="Re-enter Password"
-              value={rePassword}
-              onChange={(e) => setRePassword(e.target.value)}
-              className="bg-white/10 text-white px-4 py-3 w-full rounded-xl"
+              required
             />
           </div>
 
@@ -80,7 +72,7 @@ export default function RegisterPage() {
             type="submit"
             className="bg-blue-600 py-4 w-full rounded-xl text-white font-semibold"
           >
-            Register
+            Login
           </button>
         </form>
       </div>

@@ -22,7 +22,7 @@ def login(request):
         with connectDB() as con:
             cur = con.cursor()
 
-            query = f'''SELECT email FROM public.t_user
+            query = f'''SELECT email FROM whois.t_person_details
                         WHERE email='{email}' '''
             cur.execute(query)
             data = cur.fetchone()
@@ -31,7 +31,7 @@ def login(request):
                 res = sendResponse(1004)
                 return res
 
-            query = f'''SELECT password, firstname, pid  FROM public.t_user
+            query = f'''SELECT password, firstname, pid  FROM whois.t_person_details
                         WHERE email='{email}' and is_verified=true '''
             cur.execute(query)
             data = cur.fetchone()
@@ -65,14 +65,14 @@ def register(request):
     try:
         with connectDB() as con:
             cur = con.cursor()
-            query = f'''SELECT COUNT(*) FROM public.t_user WHERE email='{email}' '''
+            query = f'''SELECT COUNT(*) FROM whois.t_person_details WHERE email='{email}' '''
             cur.execute(query)
             dataFromDb = cur.fetchone()[0]
 
             if dataFromDb != 0:
                 return sendResponse(1000)
 
-            query = f'''INSERT INTO public.t_user(
+            query = f'''INSERT INTO whois.t_person_details(
                             email, password, is_verified, created_date)
                             VALUES ( '{email}', '{make_password(password)}', false, NOW() )
                             RETURNING pid;'''
@@ -80,7 +80,7 @@ def register(request):
             pid = cur.fetchone()[0]
 
             token = str(uuid.uuid4())
-            query = f'''INSERT INTO public.t_token(
+            query = f'''INSERT INTO whois.t_token(
                              uid, token, tokentype, tokenenddate, createddate)
                             VALUES ( {pid}, '{token}', 'register', NOW() + interval '1 day', NOW() );'''
             cur.execute(query)
