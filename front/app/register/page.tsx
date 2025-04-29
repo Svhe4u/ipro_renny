@@ -1,9 +1,9 @@
-// pages/register.tsx
 "use client";
 import { useState } from "react";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
+    action: "register",
     email: "",
     password: "",
   });
@@ -14,7 +14,21 @@ export default function RegisterPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Registering:", form);
+
+    fetch("http://127.0.0.1:8000/api/auth/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(form),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Success:", data);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   };
 
   return (
@@ -23,8 +37,6 @@ export default function RegisterPage() {
         <h1 className="text-3xl font-bold mb-8 text-center">Create Account</h1>
 
         <form onSubmit={handleSubmit}>
-       
-
           <div className="mb-4">
             <input
               type="email"

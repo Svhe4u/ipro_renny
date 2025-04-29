@@ -123,11 +123,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 def connectDB():
     con = psycopg2.connect(
-        host='localhost',  
-        dbname='product_app',
-        user='postgres',
-        password='1234',
-        port='5432',
+        host='192.168.0.15', ## dotoood   
+        dbname='qrlesson',
+        user='userlesson',
+        password='123',
+        port='5938',
     )
     return con
 # connectDB
