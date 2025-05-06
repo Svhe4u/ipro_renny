@@ -7,8 +7,6 @@ from product_pro.settings import sendResponse, connectDB, sendMail
 from django.contrib.auth.hashers import make_password, check_password
 
 
-
-
 def login(request):
     try:
         jsons = json.loads(request.body)
@@ -55,6 +53,8 @@ def login(request):
         res = sendResponse(5001)
         return res
 # login
+
+
 def register(request):
     data = json.loads(request.body)
     try:
@@ -124,22 +124,22 @@ def authCheckService(request):
                 token = request.GET.get('token', 'detault_value')
 
                 cur = con.cursor()
-                query = f'''SELECT uid FROM public.t_token WHERE token='{token}' and tokenenddate > NOW() '''
+                query = f'''SELECT uid FROM whois.t_token WHERE token='{token}' and tokenenddate > NOW() '''
                 cur.execute(query)
                 pid = cur.fetchone()
                 if pid is None:
                     res = sendResponse(1001, action='register')
                     return JsonResponse(res)
 
-                query = f'''SELECT is_verified FROM public.t_user WHERE pid='{pid[0]}' '''
+                query = f'''SELECT is_verified FROM whois.t_person_details WHERE pid='{pid[0]}' '''
                 cur.execute(query)
-                data=cur.fetchone()[0]
+                data = cur.fetchone()[0]
 
                 if data is True:
                     res = sendResponse(1002, action='register')
                     return JsonResponse(res)
 
-                query = f'''UPDATE public.t_user
+                query = f'''UPDATE whois.t_person_details
                             SET is_verified=true
                             WHERE pid={pid[0]}  '''
                 cur.execute(query)

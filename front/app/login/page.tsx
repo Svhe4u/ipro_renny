@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [form, setForm] = useState({
     action: "login",
     email: "",
@@ -15,7 +17,6 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       const response = await fetch("http://127.0.0.1:8000/api/auth/", {
         method: "POST",
@@ -26,11 +27,9 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
-      console.log("Response:", data);
-
-      if (response.ok) {
+      if (data.resultCode === 200) {
         alert("Login successful!");
-        // You can redirect here or store user data
+        router.push("/");
       } else {
         alert(data.message || "Login failed.");
       }
@@ -74,7 +73,16 @@ export default function LoginPage() {
           >
             Login
           </button>
+          <br />
+          <br />
         </form>
+
+        <button
+          onClick={() => router.push("/register")}
+          className="bg-green-600 py-4 w-full rounded-xl text-white font-semibold"
+        >
+          Register
+        </button>
       </div>
     </div>
   );

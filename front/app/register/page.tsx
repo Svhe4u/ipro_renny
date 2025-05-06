@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -8,6 +9,8 @@ export default function RegisterPage() {
     password: "",
   });
   const [rePassword, setRePassword] = useState("");
+  const [register, setRegister] = useState(false);
+  const router = useRouter();
 
   const handleChange = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -15,14 +18,13 @@ export default function RegisterPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Check if passwords match
+    setRegister(true);
     if (rePassword !== form.password) {
       alert("Passwords do not match");
-      return; // Stop the form submission
+      setRegister(false);
+      return;
     }
 
-    // Proceed with the API call if passwords match
     fetch("http://127.0.0.1:8000/api/auth/", {
       method: "POST",
       headers: {
@@ -32,12 +34,18 @@ export default function RegisterPage() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Success:", data);
-        // You can add additional logic here, like redirecting after success
+        if (data.resultCode === 200) {
+          alert("Login successful!");
+          router.push("/login");
+
+        } else {
+          alert(data.message || "Login failed.");
+        }
+        setRegister(false);
       })
       .catch((error) => {
         console.error("Error:", error);
-        // Optionally handle the error UI here
+        setRegister(false);
       });
   };
 
@@ -78,11 +86,21 @@ export default function RegisterPage() {
 
           <button
             type="submit"
+            disabled={register}
             className="bg-blue-600 py-4 w-full rounded-xl text-white font-semibold"
           >
-            Register
+            {register ? "Registering..." : "Register"}
           </button>
         </form>
+        <br />
+        <br />
+        <button
+          type="button"
+          onClick={() => router.push("/login")}
+          className="bg-green-600 py-4 w-full rounded-xl text-white font-semibold"
+        >
+          Login
+        </button>
       </div>
     </div>
   );
