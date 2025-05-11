@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -10,6 +10,16 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (token) {
+        router.push("/");
+      }
+    }
+  }, []);
 
   const handleChange = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -17,6 +27,9 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const response = await fetch("http://127.0.0.1:8000/api/auth/", {
         method: "POST",
@@ -28,10 +41,13 @@ export default function LoginPage() {
 
       const data = await response.json();
       if (data.resultCode === 200) {
+        const pid = data.data[0].pid.toString();
+        localStorage.setItem("token", pid);
         alert("Login successful!");
         router.push("/");
       } else {
-        alert(data.message || "Login failed.");
+        alert(data.resultMessage);
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -69,9 +85,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="bg-blue-600 py-4 w-full rounded-xl text-white font-semibold"
           >
-            Login
+            {isSubmitting ? "Түр хүлээнэ үү..." : "Нэвтрэх"}
           </button>
           <br />
           <br />

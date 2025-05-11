@@ -1,134 +1,124 @@
-from product_pro.settings import sendResponse, connectDB
+from product_pro.settings import sendResponse, connectDB, disconnectDB
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
 
 
-def product():
+def resumeAll(request):
+
+    jsons = json.loads(request.body)
+    action = jsons['action']
     try:
-        with connectDB() as con:
-            cur = con.cursor()
-            query = f'''SELECT p.id as id,
-                            p.name as name,
-                            c.name as category,
-                            p.quantity as quantity,
-                            p.price as price,
-                            s.name as supplier,
-                            sa.quantity  as sales,
-                            p.category_id as category_id
-                            FROM public.products as p
-                        LEFT JOIN public.categories as c on c.id=p.category_id
-                        LEFT JOIN public.suppliers as s on s.id=p.supplier_id
-                        LEFT JOIN public.sales as sa on sa.product_id=p.id
-                        '''
-            cur.execute(query)
-            columns = cur.description
-            respRow = {}
-            respRow['products'] = [{columns[index][0]: column for index,
-                                    column in enumerate(value)} for value in cur.fetchall()]
-            # products
-
-            query = '''SELECT id, name FROM public.categories'''
-            cur.execute(query)
-            categories = [{"id": row[0], "name": row[1]}
-                          for row in cur.fetchall()]
-            respRow['categories'] = categories
-            # categories
-
-            query = f'''SELECT s.id as id,
-                                p.name as name,
-                                s.quantity as quantity,
-                                s.sale_date as sale_date,
-                                s.total_price as total_price
-                                FROM public.sales as s
-                        INNER JOIN public.products as p on p.id=s.product_id
-                        
-                        '''
-            cur.execute(query)
-            columns = cur.description
-            respRow['sales'] = [{columns[index][0]: column for index,
-                                 column in enumerate(value)} for value in cur.fetchall()]
-            # sales
-
-            result = sendResponse(200, [respRow], action='product')
-            return result
-    except:
-        res = sendResponse(4005)
-        return res
-# product
-
-# SELECT s.id as id,
-# 		p.name as name,
-# 		s.quantity as quantity,
-# 		s.sale_date as sale_date,
-# 		s.total_price as total_price
-# 		FROM public.sales as s
-# INNER JOIN public.products as p on p.id=s.product_id
-
-
-def addProduct(request):
-    data = json.loads(request.body)
-    try:
-        name = data['name']
-        category_id = data['category_id']
-        quantity = data['quantity']
-        price = data['price']
-    except:
-        res = sendResponse(4004)
-        return res
-
-    try:
-        with connectDB() as con:
-            cur = con.cursor()
-            query = f'''INSERT INTO public.products(
-                        name, category_id, quantity, price)
-                        VALUES ('{name}', {category_id}, {quantity}, {price});'''
-            cur.execute(query)
-            con.commit()
-
-            res = sendResponse(200)
-            return res
+        pid = jsons["pid"]
     except Exception as e:
-        res = sendResponse(4005)
-        return res
-# addProduct
-
-
-def updateProduct(request):
-    data = json.loads(request.body)
+        data = [{"error": str(e) + " key error"}]
+        result = sendResponse(404, data, action)
+        return result
     try:
-        id = data['id']
-        category_id = data['category_id']
-        quantity = data['quantity']
-        price = data['price']
-        name = data['name']
-    except Exception as e:
-        res = sendResponse(4004)
-        return res
+        myCon = connectDB()
+        cursor = myCon.cursor()
+        query = F"""SELECT
+                          pid, firstname, lastname, headline, address, phone, email, linkedin, github, facebook, summary
+                    FROM whois.t_person_details
+                    WHERE pid={pid}  """
+        cursor.execute(query)
+        columns = cursor.description
+        respRow = [{"personal_details": {columns[index][0]: column
+                                         for index, column in enumerate(value)} for value in cursor.fetchall()}]
+        respRow[0]["summary"] = respRow[0]["personal_details"]["summary"]
+        # personal_details
 
-    try:
-        with connectDB() as con:
-            cur = con.cursor()
-            query = f'''UPDATE public.products
-                        SET name='{name}', category_id={category_id},
-                              quantity={quantity}, price={price}
-                        WHERE id={id};'''
-            cur.execute(query)
-            con.commit()
-            jsonRes = {
-                "id": id,
-                "category_id": category_id,
-                "quantity": quantity,
-                "price": price,
-                "name": name
-            }
+        query = F"""SELECT eduid, d.degree, e."degreeName", institution, location, start_year, graduation_year, description, pid,d.did
+                        FROM whois.t_education e
+                        INNER JOIN whois.t_degree d ON d.did=e.did
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["education"] = [{columns[index][0]: column
+                                    for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # education
 
-            res = sendResponse(200, [jsonRes])
-            return res
+        query = F"""SELECT expid, pid, jid, company, location, start_date, end_date
+                        FROM whois.t_experience
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["experience"] = [{columns[index][0]: column
+                                    for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # experience
+
+        countExperience = len(respRow[0]['experience'])
+        if countExperience > 0:
+            expid = respRow[0]['experience'][0]['expid']
+            query = f'''SELECT * FROM whois.t_exp_respons
+                        where expid={expid}
+                '''
+            cursor.execute(query)
+            columns = cursor.description
+            respRow[0]["experience"][0]['responsibilities'] = [{columns[index][0]: column
+                                                                for index, column in enumerate(value)} for value in cursor.fetchall()]
+
+        # # responsibilities
+
+        query = F"""SELECT sid, lp.profid, skill, pid, lp.proficiency
+                    FROM whois.t_skills s
+                    INNER JOIN whois.t_proficiency lp ON lp.profid=s.profid
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["skills"] = [{columns[index][0]: column
+                                 for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # skills
+
+        query = F"""SELECT  cid, pid, name, institution, year
+                        FROM whois.t_certifications
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["certifications"] = [{columns[index][0]: column
+                                         for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # certifications
+
+        query = F"""SELECT projid, pid, name, description, url
+                            FROM whois.t_projects
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["projects"] = [{columns[index][0]: column
+                                   for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # projectss
+
+        query = F"""SELECT lid, pid, language, lp.profid, lp.proficiency
+                        FROM whois.t_languages l
+                        INNER JOIN whois.t_proficiency lp ON lp.profid  =l.profid
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["languages"] = [{columns[index][0]: column
+                                   for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # languages
+
+        query = F"""SELECT hid, hobbies, pid
+                            FROM whois.t_hobbies
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["hobbies"] = [{columns[index][0]: column
+                                  for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # # hobbies
+
+        cursor.close()
+        disconnectDB(myCon)
+
+        data = respRow
+        result = sendResponse(200, data, action)
+
+        return result
     except Exception as e:
-        res = sendResponse(4005)
-        return res
-# updateProduct
+        data = [{"query error": str(e)}]
+        result = sendResponse(404, data, action)
+        return result
+    # resumeAll
 
 
 def deleteProduct(request):
@@ -149,8 +139,125 @@ def deleteProduct(request):
 # deleteProduct
 
 
+def resumeOne(request):
+    jsons = json.loads(request.body)
+    action = jsons['action']
+    try:
+        pid = jsons["pid"]
+    except Exception as e:
+        data = [{"error": str(e) + " key error"}]
+        result = sendResponse(404, data, action)
+        return result
+    try:
+        myCon = connectDB()
+        cursor = myCon.cursor()
+        query = F"""SELECT
+                          pid, firstname, lastname, headline, address, phone, email, linkedin, github, facebook, summary, city
+                    FROM whois.t_person_details
+                    WHERE pid={pid}  """
+        cursor.execute(query)
+        columns = cursor.description
+        respRow = [{"personal_details": {columns[index][0]: column
+                                         for index, column in enumerate(value)} for value in cursor.fetchall()}]
+        respRow[0]["summary"] = respRow[0]["personal_details"]["summary"]
+        # personal_details
+
+        query = F"""SELECT eduid, d.degree, e."degreeName", institution, location, start_year, graduation_year, description, pid,d.did
+                        FROM whois.t_education e
+                        INNER JOIN whois.t_degree d ON d.did=e.did
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["education"] = [{columns[index][0]: column
+                                    for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # education
+
+        query = F"""SELECT expid, pid, jid, company, location, start_date, end_date
+                        FROM whois.t_experience
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["experience"] = [{columns[index][0]: column
+                                    for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # experience
+
+        countExperience = len(respRow[0]['experience'])
+        if countExperience > 0:
+            expid = respRow[0]['experience'][0]['expid']
+            query = f'''SELECT * FROM whois.t_exp_respons
+                        where expid={expid}
+                '''
+            cursor.execute(query)
+            columns = cursor.description
+            respRow[0]["experience"][0]['responsibilities'] = [{columns[index][0]: column
+                                                                for index, column in enumerate(value)} for value in cursor.fetchall()]
+
+        # # responsibilities
+
+        query = F"""SELECT sid, lp.profid, skill, pid, lp.proficiency
+                    FROM whois.t_skills s
+                    INNER JOIN whois.t_proficiency lp ON lp.profid=s.profid
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["skills"] = [{columns[index][0]: column
+                                 for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # skills
+
+        query = F"""SELECT  cid, pid, name, institution, year
+                        FROM whois.t_certifications
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["certifications"] = [{columns[index][0]: column
+                                         for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # certifications
+
+        query = F"""SELECT projid, pid, name, description, url
+                            FROM whois.t_projects
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["projects"] = [{columns[index][0]: column
+                                   for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # projectss
+
+        query = F"""SELECT lid, pid, language, lp.profid, lp.proficiency
+                        FROM whois.t_languages l
+                        INNER JOIN whois.t_proficiency lp ON lp.profid  =l.profid
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["languages"] = [{columns[index][0]: column
+                                   for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # languages
+
+        query = F"""SELECT hid, hobbies, pid
+                            FROM whois.t_hobbies
+                    WHERE pid={pid}"""
+        cursor.execute(query)
+        columns = cursor.description
+        respRow[0]["hobbies"] = [{columns[index][0]: column
+                                  for index, column in enumerate(value)} for value in cursor.fetchall()]
+        # # hobbies
+
+        cursor.close()
+        disconnectDB(myCon)
+
+        data = respRow
+        result = sendResponse(200, data, action)
+
+        return result
+    except Exception as e:
+        data = [{"query error": str(e)}]
+        result = sendResponse(404, data, action)
+        return result
+
+    # resumeOne
+
+
 @csrf_exempt
-def productCheckService(request):
+def checkService(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -163,21 +270,91 @@ def productCheckService(request):
             return JsonResponse(res)
 
         action = data['action']
-        if action == 'product':
-            result = product()
+        if action == 'resumeAll':
+            result = resumeAll(request)
             return JsonResponse(result)
-        elif action == 'addProduct':
-            result = addProduct(request)
+        if action == 'resumeOne':
+            result = resumeOne(request)
             return JsonResponse(result)
-        elif action == 'updateProduct':
-            result = updateProduct(request)
+        elif action == 'updateResume':
+            result = updateResume(request)
             return JsonResponse(result)
-        elif action == 'deleteProduct':
-            result = deleteProduct(request)
-            return JsonResponse(result)
+        elif action == 'downloadPDF':
+            return download_resume_pdf(request)
         else:
             result = sendResponse(4003)
             return JsonResponse(result)
     else:
         res = sendResponse(4000)
         return JsonResponse(res)
+
+
+def updateResume(request):
+    data = json.loads(request.body)
+    try:
+        pid = data['pid']
+        firstname = data.get('firstname', None)
+        lastname = data.get('lastname', None)
+        headline = data.get('headline', None)
+        address = data.get('address', None)
+        phone = data.get('phone', None)
+        linkedin = data.get('linkedin', None)
+        github = data.get('github', None)
+        facebook = data.get('facebook', None)
+        city = data.get('city', None)
+        summary = data.get('summary', None)
+    except Exception as e:
+        data = [{"error": str(e)}]
+        result = sendResponse(404, data, "updateResume")
+        return result
+    try:
+        with connectDB() as con:
+            cur = con.cursor()
+            query = f'''UPDATE whois.t_person_details
+                                SET
+                                    firstname = %s,
+                                    lastname = %s,
+                                    headline = %s,
+                                    address = %s,
+                                    phone = %s,
+                                    linkedin = %s,
+                                    github = %s,
+                                    facebook = %s,
+                                    summary = %s,
+                                    city = %s
+                                WHERE pid = %s;  
+                            '''
+            params = (firstname, lastname, headline, address,
+                      phone, linkedin, github, facebook, summary, city, pid)
+            cur.execute(query, params)
+            con.commit()
+        return sendResponse(200)
+    except Exception as e:
+        print(f'###################{e}')
+        return sendResponse(4005)
+# updateResume
+
+
+from django.template.loader import render_to_string
+import pdfkit
+from django.http import HttpResponse
+
+def download_resume_pdf(request):
+    print(f"#########pdf data: ")
+    try:
+        data = json.loads(request.body)
+        resume_data = data.get("resumeData", {})  # frontend-аас ирсэн дата
+
+        html = render_to_string("pdf_template.html", {"data": resume_data})
+
+        pdf = pdfkit.from_string(html, False)
+
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="resume.pdf"'
+        return response
+    except Exception as e:
+        print(f"PDF generation error: {e}")
+        return JsonResponse(sendResponse(5001))
+
+
+#download_resume_pdf

@@ -100,6 +100,7 @@ def authCheckService(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            print(f"##########{data}")
         except Exception as e:
             res = sendResponse(4001)
             return JsonResponse(res)
