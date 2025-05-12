@@ -43,6 +43,7 @@ export default function LoginPage() {
       if (data.resultCode === 200) {
         const pid = data.data[0].pid.toString();
         localStorage.setItem("token", pid);
+  
         alert("Login successful!");
         router.push("/");
       } else {
@@ -54,7 +55,6 @@ export default function LoginPage() {
       alert("Server error");
     }
   };
-
   return (
     <div className="flex justify-center items-center min-h-screen bg-black text-white px-6 py-12">
       <div className="max-w-md w-full">

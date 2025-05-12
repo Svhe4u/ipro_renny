@@ -5,6 +5,7 @@ from datetime import datetime
 import psycopg2
 from email.mime.text import MIMEText
 import smtplib
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -114,9 +115,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -167,8 +167,10 @@ statusMessage = {
     4003: 'Invalid Action',
     4004: 'Key дутуу',
     4005: 'Database Error',
+    4006: '`pid` байхгүй байна',
     4007: 'Password буруу байна',
     4008: 'Бүртгэлээ баталгаажуулна уу',
+    4009: 'Action key байхнүй байна',
 
     5000: 'Server Error',
     5004: 'Register Service дотоод алдаа',

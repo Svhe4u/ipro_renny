@@ -13,6 +13,7 @@ export default function SettingsModal({
   const [formData, setFormData] = useState<any>({});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+
   useEffect(() => {
     if (show) {
       fetch("http://127.0.0.1:8000/api/whois/", {
@@ -39,33 +40,44 @@ export default function SettingsModal({
   const handleImageUpload = (e: any) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData((prev: any) => ({ ...prev, image: file }));
+      setFormData((prev: any) => ({ ...prev, img: file }));
       setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: any) => {
+    const file = e.target.files?.[0];
     const payload = new FormData();
+    if (file) payload.append("img", file);
+
     for (let key in formData) {
-      payload.append(key, formData[key]);
+      if (formData[key] !== undefined && formData[key] !== null) {
+        payload.append(key, formData[key]);
+      }
     }
 
-    payload.append("action", "updateUser");
+    payload.append("action", "updateResume");
     payload.append("pid", localStorage.getItem("token") || "");
 
+    // for (let pair of payload.entries()) {
+    //   console.log(`${pair[0]}:`, pair[1]); // confirm what's inside
+    // }
     const res = await fetch("http://127.0.0.1:8000/api/whois/", {
       method: "POST",
       body: payload,
     });
 
-    if (res.ok) {
+    const data = await res.json();
+
+    if (data.resultCode === 200) {
       alert("Хадгалагдлаа!");
       onClose();
+    } else {
+      alert(data.resultMessage);
     }
   };
 
   if (!show) return null;
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg w-[500px] max-h-[90vh] overflow-y-auto">
@@ -80,9 +92,9 @@ export default function SettingsModal({
               onChange={handleImageUpload}
               className="hidden"
             />
-            {imagePreview ? (
+            {formData.img ? (
               <img
-                src={imagePreview}
+                src={formData.img}
                 alt="Preview"
                 className="w-full h-full object-cover"
               />

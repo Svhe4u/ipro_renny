@@ -2,33 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { Moon, Sun, Settings, LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import SettingsModal from "@/components/SettingsModal";
 
 const ResumeHeader = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [logged, setLogged] = useState(false);
   const router = useRouter();
-
+  const pathname = usePathname();
   useEffect(() => {
+    
     const token = localStorage.getItem("token");
-    if (!token) return;
-
-    fetch("http://127.0.0.1:8000/api/whois/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "resumeOne",
-        pid: token,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const userData = data?.data?.[0]?.personal_details;
-        if (userData) setUser(userData);
-      });
-  }, []);
+    setLogged(!!token);
+  }, [pathname]);
 
   const toggleTheme = () => {
     setDarkMode(!darkMode);
@@ -37,8 +24,7 @@ const ResumeHeader = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    setUser(null); // 🧼 user-г цэвэрлэнэ
-    router.push("/login"); // 🧭 login рүү чиглүүлнэ
+    router.push("/login");
   };
 
   return (
@@ -73,7 +59,7 @@ const ResumeHeader = () => {
           <Settings size={20} />
         </button>
 
-        {user ? (
+        {logged ? (
           <button
             onClick={handleLogout}
             className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"

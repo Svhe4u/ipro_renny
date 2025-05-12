@@ -34,12 +34,13 @@ export default function RegisterPage() {
     })
       .then((response) => response.json())
       .then((data) => {
+        console.log(`#####${JSON.stringify(data)}`)
         if (data.resultCode === 200) {
           alert("Login successful!");
           router.push("/login");
 
         } else {
-          alert(data.message || "Login failed.");
+          alert(data.resultMessage || "Login failed.");
         }
         setRegister(false);
       })

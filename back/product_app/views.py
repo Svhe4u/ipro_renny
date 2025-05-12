@@ -2,6 +2,8 @@ from product_pro.settings import sendResponse, connectDB, disconnectDB
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 
 def resumeAll(request):
@@ -152,7 +154,7 @@ def resumeOne(request):
         myCon = connectDB()
         cursor = myCon.cursor()
         query = F"""SELECT
-                          pid, firstname, lastname, headline, address, phone, email, linkedin, github, facebook, summary, city
+                          pid, firstname, lastname, headline, address, phone, email, linkedin, github, facebook, summary, city,img
                     FROM whois.t_person_details
                     WHERE pid={pid}  """
         cursor.execute(query)
@@ -259,11 +261,25 @@ def resumeOne(request):
 @csrf_exempt
 def checkService(request):
     if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-        except:
-            res = sendResponse(4001)
-            return JsonResponse(res)
+        if request.content_type.startswith("multipart/form-data"):
+            action = request.POST.get('action')
+            print(f"##################action: ${action}")
+            if not action:
+                res = sendResponse(4009)
+                return JsonResponse(res)
+            if action == 'updateResume':
+                result = updateResume(request)
+                return JsonResponse(result)
+            else:
+                result = sendResponse(4003)
+                return JsonResponse(result)
+        else:
+
+            try:
+                data = json.loads(request.body)
+            except:
+                res = sendResponse(4001)
+                return JsonResponse(res)
 
         if "action" not in data:
             res = sendResponse(4002)
@@ -276,11 +292,6 @@ def checkService(request):
         if action == 'resumeOne':
             result = resumeOne(request)
             return JsonResponse(result)
-        elif action == 'updateResume':
-            result = updateResume(request)
-            return JsonResponse(result)
-        elif action == 'downloadPDF':
-            return download_resume_pdf(request)
         else:
             result = sendResponse(4003)
             return JsonResponse(result)
@@ -290,24 +301,38 @@ def checkService(request):
 
 
 def updateResume(request):
-    data = json.loads(request.body)
     try:
-        pid = data['pid']
-        firstname = data.get('firstname', None)
-        lastname = data.get('lastname', None)
-        headline = data.get('headline', None)
-        address = data.get('address', None)
-        phone = data.get('phone', None)
-        linkedin = data.get('linkedin', None)
-        github = data.get('github', None)
-        facebook = data.get('facebook', None)
-        city = data.get('city', None)
-        summary = data.get('summary', None)
+        img = request.FILES.get('img')
+        pid = request.POST.get('pid')
+        if not pid:
+            return sendResponse(4006)
+        firstname = request.POST.get('firstname', None)
+        lastname = request.POST.get('lastname', None)
+        headline = request.POST.get('headline', None)
+        address = request.POST.get('address', None)
+        phone = request.POST.get('phone', None)
+        linkedin = request.POST.get('linkedin', None)
+        github = request.POST.get('github', None)
+        facebook = request.POST.get('facebook', None)
+        city = request.POST.get('city', None)
+        summary = request.POST.get('summary', None)
     except Exception as e:
         data = [{"error": str(e)}]
         result = sendResponse(404, data, "updateResume")
         return result
     try:
+        if img:
+            image_name = img.name
+
+            # Зургийг хадгалах
+            image_path = default_storage.save(
+                f'images/{image_name}', ContentFile(img.read()))
+
+            # Хадгалсан зургийн URL буцаах
+            image_url = default_storage.url(image_path)
+
+            zuragZam = f'http://127.0.0.1:8000{image_url}'
+
         with connectDB() as con:
             cur = con.cursor()
             query = f'''UPDATE whois.t_person_details
@@ -321,11 +346,12 @@ def updateResume(request):
                                     github = %s,
                                     facebook = %s,
                                     summary = %s,
+                                    img = %s,
                                     city = %s
                                 WHERE pid = %s;  
                             '''
             params = (firstname, lastname, headline, address,
-                      phone, linkedin, github, facebook, summary, city, pid)
+                      phone, linkedin, github, facebook, summary, zuragZam, city, pid)
             cur.execute(query, params)
             con.commit()
         return sendResponse(200)
@@ -333,28 +359,3 @@ def updateResume(request):
         print(f'###################{e}')
         return sendResponse(4005)
 # updateResume
-
-
-from django.template.loader import render_to_string
-import pdfkit
-from django.http import HttpResponse
-
-def download_resume_pdf(request):
-    print(f"#########pdf data: ")
-    try:
-        data = json.loads(request.body)
-        resume_data = data.get("resumeData", {})  # frontend-аас ирсэн дата
-
-        html = render_to_string("pdf_template.html", {"data": resume_data})
-
-        pdf = pdfkit.from_string(html, False)
-
-        response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="resume.pdf"'
-        return response
-    except Exception as e:
-        print(f"PDF generation error: {e}")
-        return JsonResponse(sendResponse(5001))
-
-
-#download_resume_pdf
