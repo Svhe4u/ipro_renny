@@ -51,6 +51,7 @@ export default function ResumePage() {
   if (!checked) return <p>Та нэвтэрч орно уу!</p>;
   if (!resumeData) return <p>Уншиж байна.....</p>;
 
+  console.log(resumeData)
   const SelectedTemplate = templateMap[template];
   return (
     <div className="p-8">
